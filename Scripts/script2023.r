@@ -62,12 +62,12 @@ write.csv(filtered_data, file = "Data/Output2_preprocessed_data.csv", row.names 
 
 
 
-# Étape 4 : Création d'un index unique pour chaque ligne du dataframe ------------------------------------------------
+# Création d'un index unique pour chaque ligne du dataframe ------------------------------------------------
 # Combiner les colonnes "Matricule" et "Affectation" pour créer une nouvelle colonne "Index"
 # Utilisation de paste pour concaténer les deux colonnes avec un underscore comme séparateur
 filtered_data$Index <- paste(filtered_data$Matricule, filtered_data$Affectation, sep = "_")
 
-# Étape 2 : Définir la colonne "Index" comme index (row names) du dataframe
+
 # La colonne "Index" devient l'identifiant unique pour chaque ligne du dataframe pour nous aider aprés dans la vis
 rownames(filtered_data) <- filtered_data$Index
 
@@ -80,5 +80,63 @@ head(filtered_data)
 
 # Enregistrer le dataframe modifié dans un fichier CSV avec row.names=TRUE pour inclure l'index
 write.csv(filtered_data, file = "Data/Output3_indexed_data.csv", row.names = TRUE)
+
+
+# Définir les coefficients des modules
+coefficients <- c(SYS1 = 5, RES1 = 4, ANUM = 4, RO = 3, ORG = 3, LANG1 = 2, IGL = 5, THP = 4)
+
+# Appliquer la pondération aux colonnes correspondantes
+for (module in names(coefficients)) {
+  filtered_data[[module]] <- filtered_data[[module]] * coefficients[module]
+}
+
+# Normaliser les données pondérées
+normalized_data <- scale(filtered_data)
+
+head(normalized_data)
+
+# Enregistrer les données normalisées dans un fichier CSV
+write.csv(normalized_data, file = "Data/Output4_normalized_data.csv", row.names = TRUE)
+
+
+# Étape 4 : Analyse en Composantes Principales (ACP) -----------------------------------------------------------
+# Appliquer l'ACP sur les données normalisées
+acp_result <- PCA(normalized_data, graph = FALSE)
+
+# Visualiser la variance expliquée par les composantes principales
+fviz_screeplot(acp_result, addlabels = TRUE, ylim = c(0, 50))
+
+# Visualiser les individus sur les deux premières composantes principales
+fviz_pca_ind(acp_result,
+             col.ind = "cos2", # Coloration selon la qualité de représentation
+             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
+             repel = TRUE) # Éviter le chevauchement des étiquettes
+
+# Visualiser les variables sur les deux premières composantes principales
+fviz_pca_var(acp_result,
+             col.var = "contrib", # Coloration selon la contribution
+             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
+             repel = TRUE)
+
+# Biplot des individus et des variables
+fviz_pca_biplot(acp_result, repel = TRUE,
+                col.var = "#2E9FDF", # Couleur des variables
+                col.ind = "#674268") # Couleur des individus
+
+
+#Précisier mon position et mon binôme dans le biplot
+# Ajouter une colonne pour la couleur des individus, Par défaut, tout le monde est en gris
+individual_colors <- rep("gray", nrow(normalized_data))
+
+# Modifier la couleur des points spécifiques
+highlighted_points <- c("21/0298_ST2", "21/0326_ST2")
+individual_colors[rownames(normalized_data) %in% highlighted_points] <- "red"
+
+# Créer le biplot avec la coloration personnalisée
+fviz_pca_biplot(acp_result, repel = TRUE,
+                col.var = "#2E9FDF", # Couleur des variables
+                col.ind = individual_colors, # Couleur personnalisée des individus
+                palette = c("gray", "red")) # Palette utilisée
+
 
 
