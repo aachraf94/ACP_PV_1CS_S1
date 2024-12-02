@@ -1,0 +1,27 @@
+# Ignorer les fichiers de données sensibles
+/data/*.csv
+/data/*.xlsx
+
+# Ignorer les fichiers de sortie
+/results/
+
+# Ignorer les fichiers générés automatiquement
+*.log
+*.tmp
+*.bak
+
+# Ignorer les fichiers Python ou R temporaires
+__pycache__/
+*.py[cod]
+.Rhistory
+
+# Ignorer les environnements virtuels
+venv/
+.env
+
+# Ignorer les fichiers système
+.DS_Store
+Thumbs.db
+
+# Ignorer les configurations spécifiques à VS Code
+.vscode/

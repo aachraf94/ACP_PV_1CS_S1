@@ -1,0 +1,11 @@
+Il s'agit d'effectuer une analyse via ACP  sur vos PVs de délibération.
+
+1- Les données vous seront affecter
+2- Vous devez tout d'abord mettre à coté de chaque étudiant sa spécialité ( ou bien en fichier partagé, chacun met devant son matricule).
+3- Ne pas considérer la colonne moyenne. faites les prétraitement nécessaires.
+4- Effectuer l'ACP et analyser les résultats.
+5- Que doit-on faire s'il y a des données aberrantes.
+6- Refaire l'analyse en supprimant ces données et interpréter.
+7- Situez vous sur le nuage.
+8- Pensez vous que les skills qui vous correspondent sur les graphes sont conformes à vos spécialités?
+9- Regarder les résultats de vos camarades et situer vous à travers les années.
