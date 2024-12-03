@@ -28,8 +28,9 @@ head(affectation_data)
 
 
 # Fusionner les deux jeux de données sur "Matricule" avec left join
-merged_data <- merge(data, affectation_data[, c("Matricule", "Affectation")], 
-                     by = "Matricule", all.x = TRUE)
+merged_data <- merge(data, affectation_data[, c("Matricule", "Affectation")],
+    by = "Matricule", all.x = TRUE
+)
 
 # Afficher un aperçu des données fusionnées
 head(merged_data)
@@ -87,7 +88,7 @@ coefficients <- c(SYS1 = 5, RES1 = 4, ANUM = 4, RO = 3, ORG = 3, LANG1 = 2, IGL 
 
 # Appliquer la pondération aux colonnes correspondantes
 for (module in names(coefficients)) {
-  filtered_data[[module]] <- filtered_data[[module]] * coefficients[module]
+    filtered_data[[module]] <- filtered_data[[module]] * coefficients[module]
 }
 
 # Normaliser les données pondérées
@@ -102,29 +103,37 @@ write.csv(normalized_data, file = "Data/Output4_normalized_data.csv", row.names 
 # Étape 4 : Analyse en Composantes Principales (ACP) -----------------------------------------------------------
 # Appliquer l'ACP sur les données normalisées
 acp_result <- PCA(normalized_data, graph = FALSE)
+summary(acp_result)
+
+# Sauvegarder les résultats de l'ACP dans un fichier RDS
+saveRDS(acp_result, file = "Data/Result1_acp_result.rds")
 
 # Visualiser la variance expliquée par les composantes principales
 fviz_screeplot(acp_result, addlabels = TRUE, ylim = c(0, 50))
 
 # Visualiser les individus sur les deux premières composantes principales
 fviz_pca_ind(acp_result,
-             col.ind = "cos2", # Coloration selon la qualité de représentation
-             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
-             repel = TRUE) # Éviter le chevauchement des étiquettes
+    col.ind = "cos2", # Coloration selon la qualité de représentation
+    gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
+    repel = TRUE
+) # Éviter le chevauchement des étiquettes
 
 # Visualiser les variables sur les deux premières composantes principales
 fviz_pca_var(acp_result,
-             col.var = "contrib", # Coloration selon la contribution
-             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
-             repel = TRUE)
+    col.var = "contrib", # Coloration selon la contribution
+    gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
+    repel = TRUE
+)
 
 # Biplot des individus et des variables
-fviz_pca_biplot(acp_result, repel = TRUE,
-                col.var = "#2E9FDF", # Couleur des variables
-                col.ind = "#674268") # Couleur des individus
+fviz_pca_biplot(acp_result,
+    repel = TRUE,
+    col.var = "#2E9FDF", # Couleur des variables
+    col.ind = "#674268"
+) # Couleur des individus
 
 
-#Précisier mon position et mon binôme dans le biplot
+# Précisier mon position et mon binôme dans le biplot
 # Ajouter une colonne pour la couleur des individus, Par défaut, tout le monde est en gris
 individual_colors <- rep("gray", nrow(normalized_data))
 
@@ -133,10 +142,79 @@ highlighted_points <- c("21/0298_ST2", "21/0326_ST2")
 individual_colors[rownames(normalized_data) %in% highlighted_points] <- "red"
 
 # Créer le biplot avec la coloration personnalisée
-fviz_pca_biplot(acp_result, repel = TRUE,
-                col.var = "#2E9FDF", # Couleur des variables
-                col.ind = individual_colors, # Couleur personnalisée des individus
-                palette = c("gray", "red")) # Palette utilisée
+fviz_pca_biplot(acp_result,
+    repel = TRUE,
+    col.var = "#2E9FDF", # Couleur des variables
+    col.ind = individual_colors, # Couleur personnalisée des individus
+    palette = c("gray", "red")
+) # Palette utilisée
+
+
+# TODO: analyser les résultats (Rapport)
+# TODO: des données aberrantes (nv ACP) (Rapport + code)         Doneee
+# TODO: Situez vous sur le nuage (code)
+# TODO: Vos skills sont conformes evec vos spécialités? (groupes plot)
+# TODO: Situer vous à travers les années
 
 
 
+# Étape 5 : Colorer chaque spécialité par un coleur --------------------------------------------------------------------------------
+# Extraire la spécialité de l'identifiant
+specialty <- gsub(".*_", "", rownames(normalized_data))
+
+# Générer une palette de couleurs unique pour chaque spécialité
+specialty_colors <- as.factor(specialty)
+palette_colors <- rainbow(length(levels(specialty_colors)))
+
+# Créer un biplot avec des couleurs par spécialité
+fviz_pca_biplot(acp_result,
+    repel = TRUE,
+    col.var = "#2E9FDF", # Couleur des variables
+    col.ind = specialty_colors, # Couleur personnalisée des individus
+    palette = palette_colors
+) +
+    ggtitle("Biplot ACP avec spécialités")
+
+
+
+# Étape 6 : Gestion des données aberrantes -------------------------------------------------------------------------------
+
+# Identifier les individus avec des scores anormaux sur les composantes principales
+outlier_scores <- acp_result$ind$coord[, 1:2] # Scores des deux premières composantes
+z_scores_outliers <- scale(outlier_scores) # Calcul des z-scores pour les scores ACP
+
+
+is_outlier <- apply(z_scores_outliers, 1, function(x) any(abs(x) > 1.75))
+
+
+# Extraire les indices des individus aberrants
+outlier_indices <- which(is_outlier)
+
+# Afficher les individus identifiés comme aberrants
+outliers <- rownames(normalized_data)[outlier_indices]
+print("Individus aberrants détectés :")
+print(outliers)
+
+# Supprimer les individus aberrants des données normalisées
+cleaned_data <- normalized_data[!rownames(normalized_data) %in% outliers, ]
+
+# Réappliquer l'ACP sur les données nettoyées
+acp_result_cleaned <- PCA(cleaned_data, graph = FALSE)
+summary(acp_result_cleaned)
+
+# Visualiser les résultats de l'ACP après nettoyage
+fviz_screeplot(acp_result_cleaned, addlabels = TRUE, ylim = c(0, 50))
+fviz_pca_ind(acp_result_cleaned,
+    col.ind = "cos2",
+    gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
+    repel = TRUE
+)
+fviz_pca_var(acp_result_cleaned,
+    col.var = "contrib",
+    gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
+    repel = TRUE
+)
+
+# Enregistrer les données nettoyées et les résultats ACP dans des fichiers
+write.csv(cleaned_data, file = "Data/Output5_cleaned_data.csv", row.names = TRUE)
+saveRDS(acp_result_cleaned, file = "Data/Result2_acp_cleaned.rds")
