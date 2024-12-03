@@ -150,13 +150,6 @@ fviz_pca_biplot(acp_result,
 ) # Palette utilisée
 
 
-# TODO: analyser les résultats (Rapport)
-# TODO: des données aberrantes (nv ACP) (Rapport + code)         Doneee
-# TODO: Situez vous sur le nuage (code)
-# TODO: Vos skills sont conformes evec vos spécialités? (groupes plot)
-# TODO: Situer vous à travers les années
-
-
 
 # Étape 5 : Colorer chaque spécialité par un coleur --------------------------------------------------------------------------------
 # Extraire la spécialité de l'identifiant
@@ -218,3 +211,44 @@ fviz_pca_var(acp_result_cleaned,
 # Enregistrer les données nettoyées et les résultats ACP dans des fichiers
 write.csv(cleaned_data, file = "Data/Output5_cleaned_data.csv", row.names = TRUE)
 saveRDS(acp_result_cleaned, file = "Data/Result2_acp_cleaned.rds")
+
+
+
+
+# Étape 7 : S'identifier dans le biplot  ---------------------------------------------------------------------------
+
+# Identifier votre observation
+highlight <- "21/0298_ST2"
+
+# Créer une palette où votre observation a une couleur spécifique
+custom_colors <- ifelse(rownames(cleaned_data) == highlight, "red", "gray")
+
+# Générer le biplot avec la couleur personnalisée
+fviz_pca_biplot(
+    acp_result_cleaned,
+    repel = TRUE,
+    col.var = "#2E9FDF", # Couleur des variables
+    col.ind = custom_colors, # Couleur personnalisée pour chaque individu
+    palette = NULL
+) +
+    ggtitle("Biplot ACP avec mise en évidence de 21/0298_ST2 (Données nettoyées)")
+
+
+
+# Étape 8 : Analyse des groupes de spécialités -------------------------------------------------------------------
+# Extraire les spécialités des identifiants
+specialty_cleaned <- gsub(".*_", "", rownames(cleaned_data))
+
+# Générer une palette unique pour chaque spécialité
+specialty_colors_cleaned <- as.factor(specialty_cleaned)
+palette_specialty_colors <- rainbow(length(levels(specialty_colors_cleaned)))
+
+# Créer un biplot coloré par spécialité
+fviz_pca_biplot(
+    acp_result_cleaned,
+    repel = TRUE,
+    col.var = "#ff0000", # Couleur des variables
+    col.ind = specialty_colors_cleaned, # Couleur par spécialité
+    palette = palette_specialty_colors
+) +
+    ggtitle("Biplot ACP avec les groupes colorés par spécialité (Données nettoyées)")
