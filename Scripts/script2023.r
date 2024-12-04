@@ -44,7 +44,8 @@ write.csv(merged_data, file = "Data/Output1_merged_data.csv", row.names = FALSE)
 
 # Étape 3 : Prétraitement des données ------------------------------------------------------------------------------
 
-# Garder uniquement les lignes où la colonne "Situation" est égale à "Inscrit" donc supprimer "Abandon" et "Congé académique (année blanche) pour raisons médicales"
+# Garder uniquement les lignes où la colonne "Situation" est égale à "Inscrit"
+# Donc supprimer "Abandon" et "Congé académique (année blanche) pour raisons médicales"
 filtered_data <- merged_data[merged_data$Situation == "Inscrit", ]
 
 # Retirer les colonnes "Situation", "Groupe_S1", "Rang_S1", "Moy_S1", et "Groupe_S2" car elles ne sont pas pertinentes pour l'ACP
@@ -98,6 +99,10 @@ head(normalized_data)
 
 # Enregistrer les données normalisées dans un fichier CSV
 write.csv(normalized_data, file = "Data/Output4_normalized_data.csv", row.names = TRUE)
+
+
+
+
 
 
 # Étape 4 : Analyse en Composantes Principales (ACP) -----------------------------------------------------------
